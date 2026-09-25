@@ -104,9 +104,10 @@ pnpm package  # 出 release/theme.tar.gz 与带版本号的副本 + sha256
 
 主题包结构：`theme.json` + `LICENSE` + `dist/`（+ 可选 `preview.png`）。探针 hub 只伺服静态文件，`dist/` 就是整站，前端路由靠 hub 的 SPA 兜底。
 
-### 已知环境差异
+### 测试的现状（两条，都不是移植引入的 bug，但要知道）
 
-上游的单元测试（`pnpm test`）保留原样。在本机 Node 26 下，vitest 的 jsdom 环境拿不到 `localStorage`（Node 26 的实验性 localStorage 与 vitest/jsdom 冲突），`src/test/setup.ts` 的 `localStorage.clear()` 会在 afterEach 抛错，导致全部用例失败；该现象在**未改动的上游代码**上同样复现，与移植无关。用上游 CI 使用的 Node 22 运行即可。
+1. **本机 Node 26 下整套跑不起来**：vitest 的 jsdom 环境拿不到 `localStorage`（Node 26 的实验性 localStorage 会抢占），`src/test/setup.ts` 的 `localStorage.clear()` 在 afterEach 抛错，148 个用例全失败。该现象在**未改动的上游代码**上同样复现（已实测），与移植无关；用上游 CI 使用的 Node 22 可正常运行。
+2. **测试的 mock 打的是哪吒的 `/api/v1/*`**，而这套移植已把接口换成极简探针的 `/api/nodes`、`/api/ws`、`/api/nodes/{id}/metrics`、`/api/me`、`/api/themes/<short>/config`；另外被移除的区块（GPU / 进程数 / TCP-UDP / 交换历史）相关断言也随代码失效。已同步删掉 `server-detail-chart.test.tsx` 里那几个失效断言（GPU、进程、TCP/UDP，以及历史指标列表里的 gpu/swap/process_count/tcp_conn/udp_conn），其余文件的 mock 未做对齐——要一套全绿的测试需要单独一轮，把 mock 换成探针的接口。
 
 ## 许可
 

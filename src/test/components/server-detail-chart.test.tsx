@@ -204,7 +204,7 @@ describe("ServerDetailChart", () => {
 		expect(container.querySelectorAll(".h-\\[182px\\]")).toHaveLength(6);
 	});
 
-	it("renders realtime resource, network, connection, and GPU charts", async () => {
+	it("renders realtime resource and network charts", async () => {
 		const user = userEvent.setup();
 		seedWebSocketData();
 
@@ -216,15 +216,11 @@ describe("ServerDetailChart", () => {
 		expect(screen.getByText("serverDetailChart.period1d")).toBeInTheDocument();
 		expect(screen.getByText("serverDetailChart.period7d")).toBeInTheDocument();
 		expect(screen.getByText("CPU")).toBeInTheDocument();
-		expect(screen.getByText("GPU: NVIDIA T4")).toBeInTheDocument();
 		expect(screen.getByText("serverDetailChart.mem")).toBeInTheDocument();
 		expect(screen.getByText("serverDetailChart.swap")).toBeInTheDocument();
 		expect(screen.getByText("serverDetailChart.disk")).toBeInTheDocument();
-		expect(screen.getByText("serverDetailChart.process")).toBeInTheDocument();
 		expect(screen.getByText("serverDetailChart.upload")).toBeInTheDocument();
 		expect(screen.getByText("serverDetailChart.download")).toBeInTheDocument();
-		expect(screen.getByText("TCP")).toBeInTheDocument();
-		expect(screen.getByText("UDP")).toBeInTheDocument();
 		expect(screen.getAllByTestId("area-chart").length).toBeGreaterThan(0);
 		expect(screen.getAllByTestId("line-chart").length).toBeGreaterThan(0);
 
@@ -264,17 +260,14 @@ describe("ServerDetailChart", () => {
 		await screen.findByText("serverDetailChart.realtime");
 		await user.click(screen.getByText("serverDetailChart.period1d"));
 
+		// 极简探针只保留 CPU / 内存 / 磁盘 / 上下行速率的历史，
+		// GPU、swap、进程数、TCP/UDP 没有历史曲线（对应的区块已从组件里删除）
 		for (const metric of [
 			"cpu",
-			"gpu",
 			"memory",
-			"swap",
 			"disk",
-			"process_count",
 			"net_out_speed",
 			"net_in_speed",
-			"tcp_conn",
-			"udp_conn",
 		]) {
 			await waitFor(() => {
 				expect(detailChartMocks.fetchServerMetrics).toHaveBeenCalledWith(
