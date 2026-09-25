@@ -35,7 +35,7 @@ export default function ServerOverview({
 	const disableAnimatedMan = window.DisableAnimatedMan as boolean;
 
 	// @ts-expect-error CustomIllustration is a global variable
-	const customIllustration = window.CustomIllustration || "/animated-man.webp";
+	const customIllustration = window.CustomIllustration || "/character.webp";
 
 	const customBackgroundImage =
 		(window.CustomBackgroundImage as string) !== ""
@@ -166,9 +166,11 @@ export default function ServerOverview({
 						</section>
 					</section>
 					{!disableAnimatedMan && (
+						// 上游插画是竖长图，-85px 的偏移刚好让底边压住卡片上沿；
+						// 移植换成方形贴纸后按原偏移会整块悬在卡片上方，故下移到「底边压住卡片约 22px」
 						<img
-							className="absolute right-3 top-[-85px] z-50 w-20 scale-90 group-hover:opacity-50 md:scale-100 transition-all"
-							alt={"animated-man"}
+							className="absolute right-3 top-[-58px] z-50 w-20 scale-90 group-hover:opacity-50 md:scale-100 transition-all"
+							alt={"illustration"}
 							src={customIllustration}
 							loading="eager"
 						/>

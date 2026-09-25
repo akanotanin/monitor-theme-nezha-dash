@@ -40,7 +40,7 @@ export const defaultThemeConfig: ThemeConfig = {
 	customDesc: "",
 	customBackgroundImage: "",
 	customMobileBackgroundImage: "",
-	customIllustration: "/animated-man.webp",
+	customIllustration: "/character.webp",
 	customLinks: "",
 	customCode: "",
 	language: "",

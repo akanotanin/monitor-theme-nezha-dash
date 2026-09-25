@@ -94,6 +94,10 @@
 
 只保留命令面板的快捷键提示（`⌘K` / `Ctrl K`）：去掉了上游的「©2020-… Nezha ⟨版本⟩」与「Theme by nezha-dash-v2 (hash) · 移植到 极简探针 Monitor by akanotanin」两行。原作者署名仍在 `LICENSE`、`theme.json` 的 `author` 与仓库 README 里。
 
+### 首页插画
+
+上游默认是那张黑白线条小人（`animated-man.webp`）。移植换成了 `character.webp`（方形贴纸，带透明通道，浅色/深色都能用），并把它的偏移从 `top:-85px` 调到 `top:-58px` —— 原来的偏移是给竖长插画算的，方形图照用会整块悬在卡片上方。想换成自己的图：在「主题设置 → 首页插画」填地址即可；不想要就用「隐藏首页插画」关掉。
+
 ## 开发
 
 ```bash
@@ -115,6 +119,7 @@ pnpm package  # 出 release/theme.tar.gz 与带版本号的副本 + sha256
 
 ## 版本记录
 
+- **1.0.2** — 首页插画换成方形贴纸 `character.webp`（透明底），并把偏移从 `top:-85px` 调到 `top:-58px`（底边压住卡片右上角约 22px）。
 - **1.0.1** — 页脚去掉「©2020-… Nezha」与「Theme by nezha-dash-v2 (hash) · 移植到 极简探针 Monitor by akanotanin」两行，只留 `⌘K`/`Ctrl K` 提示。
 - **1.0.0** — 首发：哪吒前端（nezha-dash-v2 v2.4.3）移植到极简探针。
 
