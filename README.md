@@ -2,20 +2,10 @@
 
 把 [hamster1963/nezha-dash-v2](https://github.com/hamster1963/nezha-dash-v2)（哪吒监控的官方前端）移植到[极简探针 Monitor](https://github.com/monitor-probe/monitor) 的主题包。
 
-上游是一套给哪吒监控用的 React 前端：服务器卡片 / 紧凑列表双视图、分组标签、节点详情多标签图表、全球地图、延迟监控、周期流量、15 种语言、深浅色主题、命令面板、PWA。
-这个仓库把它接到极简探针的数据接口上，做成可以直接装进探针后台的主题。
-
 
 ## 安装
 
-后台一键（推荐）：
-
-1. 探针后台 → 主题 → 从 GitHub 安装 / 更新，地址填 `https://github.com/akanotanin/monitor-theme-nezha-dash`
-2. 装完在主题列表里选择 **Monitor Nezha**
-
-手动：下载 Release 里的 `theme.tar.gz`，解压到探针数据目录下的 `themes/nezha-dash/`（例如 `/opt/monitor/data/themes/nezha-dash/`），再到后台启用。
-
-> 主题标识固定是 `nezha-dash`：安装目录名、配置键都依赖它，改名等于让已装实例丢设置。
+首次安装需从 Releases 下载 theme.tar.gz 上传至探针后台，后续可在主题卡片上点击从 GitHub 更新。
 
 ## 主题设置
 
@@ -37,12 +27,7 @@
 | | 自定义代码 | 注入到页面里的自定义 HTML／脚本（相当于哪吒后台的「自定义代码」） |
 | 卡片底部标签 | 标签规则 | 每行 `匹配 = 标签1,标签2`，给卡片补带宽（蓝）／IPv4（紫）／IPv6（粉）／灰标签 |
 
-> 卡片形态固定为**服务器名居中的竖版 + 显示本计费周期上下行流量**（与 `vps.gift` 一致），不提供开关；
-> 页头只显示 Logo 与探针站点名，没有副标题。
-
 ## 数据映射
-
-适配层把探针的数据翻译成上游组件认识的「哪吒视图模型」，所以组件不用改：
 
 | 上游视图模型 | 极简探针来源 |
 | --- | --- |
@@ -88,10 +73,6 @@
 
 **上游的站点级开关怎么落地的**：上游靠哪吒的服务端模板往页面注入 `window.ForceShowMap`、`window.CustomLogo` 之类的全局变量。探针的主题包是纯静态文件，没有模板可注入，于是这些值改由主题设置下发：启动时先取配置，`applyWindowGlobals()` 写回 `window`，组件因此一行都不用改。
 
-### 首页插画
-
-上游默认是那张黑白线条小人（`animated-man.webp`）。移植换成了 `character.webp`（方形贴纸，带透明通道，浅色/深色都能用），并把它的偏移从 `top:-85px` 调到 `top:-58px` —— 原来的偏移是给竖长插画算的，方形图照用会整块悬在卡片上方。想换成自己的图：在「主题设置 → 首页插画」填地址即可；不想要就用「隐藏首页插画」关掉。
-
 ### 计费信息与卡片标签
 
 上游的计费（价格／剩余天数／免费／永久）与卡片底部那排彩色标签都来自站长在哪吒后台手写的「公开备注」JSON；移植按探针字段自动生成同一份 JSON：
@@ -111,33 +92,10 @@
 * = 100Mbps
 ```
 
-标签行的位置随视图走，和上游（源站）一致：**卡片视图**在卡片底部居中（上游宽屏会左对齐，这里显式居中）；**紧凑列表**在右侧指标网格的下方一行、靠左 —— 因为右列被拉伸到整行宽度，视觉上正好落在左侧「剩余天数」那一行的右边。
-
 ## 部署提醒（反向代理）
 
 主题会加载 `/vendor/flag-icons.min.css`（国旗样式）与 `/flags/**/*.svg`（国旗图片）。
-**反代 / WAF 规则不要把 `/vendor/` 整目录拦掉**，否则国旗元素会渲染成 0×0（看不见），
-而页面本身不会报错——这类问题在浏览器里只表现为「国旗没了」。
-
-## 开发
-
-```bash
-pnpm install
-pnpm vendor   # 把国旗/字体从依赖搬到 public/（build、dev 前会自动跑）
-pnpm dev      # 本地开发；数据要同源，建议把 dev server 反代到探针，或配合上游的 mock
-pnpm build    # typecheck + vite build
-pnpm package  # 出 release/theme.tar.gz 与带版本号的副本 + sha256
-```
-
-打 tag（形如 `1.0.0`，须与 `theme.json` / `package.json` 的 version 一致）会触发 GitHub Actions 自动构建并发布 Release。
-
-`scripts/check-defaults.mjs` 会在打包前校验 **`theme.json` 的 `default` 与 `src/monitor/config.ts` 的 `defaultThemeConfig` 是否一致**，不一致直接报错。两处必须同步：后台面板显示 theme.json 的默认值，而配置为空（新装、或保存失败）时页面实际用的是 config.ts —— 两边不同步就会出现「面板显示已开启、页面还是旧形态」这种极难排查的现象。
-
-主题包结构：`theme.json` + `LICENSE` + `dist/`（+ 可选 `preview.png`）。探针 hub 只伺服静态文件，`dist/` 就是整站，前端路由靠 hub 的 SPA 兜底。
-
-## 版本记录
-
-- **1.0.0** — 首发：哪吒前端（nezha-dash-v2 v2.4.3）移植到极简探针。
+**反代 / WAF 规则不要把 `/vendor/` 整目录拦掉**。
 
 ## 许可
 
