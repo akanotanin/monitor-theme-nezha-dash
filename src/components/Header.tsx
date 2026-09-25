@@ -119,19 +119,19 @@ function Header() {
 						sessionStorage.removeItem("selectedGroup");
 						navigate("/");
 					}}
-					className="cursor-pointer flex items-center sm:text-base text-sm font-medium"
+					className="cursor-pointer flex items-center text-[15px] font-semibold tracking-[-0.01em] sm:text-lg"
 				>
-					<div className="mr-1 flex flex-row items-center justify-start header-logo">
+					<div className="mr-1.5 flex flex-row items-center justify-start header-logo">
 						<img
 							width={40}
 							height={40}
 							alt="apple-touch-icon"
 							src={customLogo}
-							className="relative m-0! border-2 border-transparent h-6 w-6 object-cover object-top p-0!"
+							className="relative m-0! border-2 border-transparent h-7 w-7 object-cover object-top p-0!"
 						/>
 					</div>
 					{isLoading ? (
-						<Skeleton className="h-6 w-20 rounded-[5px] bg-muted-foreground/10 animate-none" />
+						<Skeleton className="h-[18px] w-24 rounded-[5px] bg-muted-foreground/10 animate-none" />
 					) : (
 						siteName || "NEZHA"
 					)}

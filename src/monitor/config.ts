@@ -40,7 +40,7 @@ export const defaultThemeConfig: ThemeConfig = {
 	customIllustration: "/character.webp",
 	customLinks: "",
 	customCode: "",
-	language: "",
+	language: "zh-CN",
 	planTags: "",
 	forceTheme: "",
 	forceSortType: "",
