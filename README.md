@@ -5,10 +5,6 @@
 上游是一套给哪吒监控用的 React 前端：服务器卡片 / 紧凑列表双视图、分组标签、节点详情多标签图表、全球地图、延迟监控、周期流量、15 种语言、深浅色主题、命令面板、PWA。
 这个仓库把它接到极简探针的数据接口上，做成可以直接装进探针后台的主题。
 
-- 显示名 **Monitor Nezha**，主题标识 `nezha-dash`
-- 界面、组件、样式沿用上游，只在数据边界加了一层适配层（`src/monitor/`）
-- 实时数据走 `/api/ws`，历史曲线走 `/api/nodes/{id}/metrics`，站点信息走 `/api/me`，站点级开关走主题设置
-- 上游原来的 README 保留为 [README-upstream.md](./README-upstream.md)
 
 ## 安装
 
@@ -90,10 +86,6 @@
 
 **上游的站点级开关怎么落地的**：上游靠哪吒的服务端模板往页面注入 `window.ForceShowMap`、`window.CustomLogo` 之类的全局变量。探针的主题包是纯静态文件，没有模板可注入，于是这些值改由主题设置下发：启动时先取配置，`applyWindowGlobals()` 写回 `window`，组件因此一行都不用改。
 
-### 页脚
-
-只保留命令面板的快捷键提示（`⌘K` / `Ctrl K`）：去掉了上游的「©2020-… Nezha ⟨版本⟩」与「Theme by nezha-dash-v2 (hash) · 移植到 极简探针 Monitor by akanotanin」两行。原作者署名仍在 `LICENSE`、`theme.json` 的 `author` 与仓库 README 里。
-
 ### 首页插画
 
 上游默认是那张黑白线条小人（`animated-man.webp`）。移植换成了 `character.webp`（方形贴纸，带透明通道，浅色/深色都能用），并把它的偏移从 `top:-85px` 调到 `top:-58px` —— 原来的偏移是给竖长插画算的，方形图照用会整块悬在卡片上方。想换成自己的图：在「主题设置 → 首页插画」填地址即可；不想要就用「隐藏首页插画」关掉。
@@ -112,17 +104,10 @@ pnpm package  # 出 release/theme.tar.gz 与带版本号的副本 + sha256
 
 主题包结构：`theme.json` + `LICENSE` + `dist/`（+ 可选 `preview.png`）。探针 hub 只伺服静态文件，`dist/` 就是整站，前端路由靠 hub 的 SPA 兜底。
 
-### 测试的现状（两条，都不是移植引入的 bug，但要知道）
-
-1. **本机 Node 26 下整套跑不起来**：vitest 的 jsdom 环境拿不到 `localStorage`（Node 26 的实验性 localStorage 会抢占），`src/test/setup.ts` 的 `localStorage.clear()` 在 afterEach 抛错，148 个用例全失败。该现象在**未改动的上游代码**上同样复现（已实测），与移植无关；用上游 CI 使用的 Node 22 可正常运行。
-2. **测试的 mock 打的是哪吒的 `/api/v1/*`**，而这套移植已把接口换成极简探针的 `/api/nodes`、`/api/ws`、`/api/nodes/{id}/metrics`、`/api/me`、`/api/themes/<short>/config`；另外被移除的区块（GPU / 进程数 / TCP-UDP / 交换历史）相关断言也随代码失效。已同步删掉 `server-detail-chart.test.tsx` 里那几个失效断言（GPU、进程、TCP/UDP，以及历史指标列表里的 gpu/swap/process_count/tcp_conn/udp_conn），其余文件的 mock 未做对齐——要一套全绿的测试需要单独一轮，把 mock 换成探针的接口。
-
 ## 版本记录
 
-- **1.0.2** — 首页插画换成方形贴纸 `character.webp`（透明底），并把偏移从 `top:-85px` 调到 `top:-58px`（底边压住卡片右上角约 22px）。
-- **1.0.1** — 页脚去掉「©2020-… Nezha」与「Theme by nezha-dash-v2 (hash) · 移植到 极简探针 Monitor by akanotanin」两行，只留 `⌘K`/`Ctrl K` 提示。
 - **1.0.0** — 首发：哪吒前端（nezha-dash-v2 v2.4.3）移植到极简探针。
 
 ## 许可
 
-Apache-2.0，继承自[上游仓库](https://github.com/hamster1963/nezha-dash-v2)。原作者 hamster1963 的署名保留在 LICENSE、页脚与主题元信息中；移植到极简探针由 akanotanin 完成。
+Apache-2.0，继承自[上游仓库](https://github.com/hamster1963/nezha-dash-v2)。原作者 hamster1963 的署名保留在 LICENSE、页脚与主题元信息中。
