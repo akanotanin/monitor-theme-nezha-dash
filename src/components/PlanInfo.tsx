@@ -2,8 +2,11 @@ import { cn, type PublicNoteData } from "@/lib/utils";
 
 export default function PlanInfo({
 	parsedData,
+	align = "center",
 }: {
 	parsedData: PublicNoteData;
+	/** 卡片视图居中（上游宽屏是左对齐、窄屏才居中，这里统一居中）；紧凑列表由调用方传 "start" 靠左。 */
+	align?: "center" | "start";
 }) {
 	if (!parsedData?.planDataMod) {
 		return null;
@@ -19,10 +22,13 @@ export default function PlanInfo({
 		? parsedData.planDataMod.networkRoute.split(",")
 		: [];
 
-	// 上游靠父级 align-items 对齐：宽于 1024px（lg 断点）时是左对齐、窄屏才居中；
-	// 这里统一居中（与上游一行差异，回退删掉 w-full 与 justify-center 即可）。
 	return (
-		<section className="flex w-full flex-wrap items-center justify-center gap-1 mt-0.5">
+		<section
+			className={cn(
+				"flex w-full flex-wrap items-center gap-1 mt-0.5",
+				align === "center" ? "justify-center" : "justify-start",
+			)}
+		>
 			{parsedData.planDataMod.bandwidth !== "" && (
 				<p
 					className={cn(

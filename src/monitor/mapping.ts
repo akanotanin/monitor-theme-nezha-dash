@@ -19,6 +19,7 @@ import type {
 	ServiceResponse,
 	SettingResponse,
 } from "@/types/nezha-api";
+import { resolvePlanTags } from "./config";
 import type { ThemeConfig } from "./config";
 import type {
 	MonitorHistory,
@@ -139,7 +140,15 @@ export function buildPublicNote(node: MonitorNode): string {
 	// amount="0" 上游渲染成绿色「免费」，endDate 以 0000-00-00 开头渲染成「永久」（见上游 billingInfo.tsx）
 	const hasPrice = node.price !== null && node.price !== undefined;
 	const hasBilling = Boolean(node.expires_at) || hasPrice || Boolean(cycle);
-	const hasPlan = Boolean(node.traffic_limit) || Boolean(node.traffic_mode);
+	// 标签可能来自主题设置（探针没有带宽/IP 数据源），有标签也要生成 planDataMod
+	const tags = resolvePlanTags(node);
+	const hasPlan =
+		Boolean(node.traffic_limit) ||
+		Boolean(node.traffic_mode) ||
+		Boolean(tags.bandwidth) ||
+		tags.ipv4 ||
+		tags.ipv6 ||
+		Boolean(tags.extra);
 
 	if (!hasBilling && !hasPlan) return "";
 
@@ -163,17 +172,17 @@ export function buildPublicNote(node: MonitorNode): string {
 
 	if (hasPlan) {
 		note.planDataMod = {
-			bandwidth: "",
+			bandwidth: tags.bandwidth,
 			// 探针的流量按月重置（traffic_reset_day = 每月几号），所以带上「/月」；
 			// 没有重置日的节点不是月度配额，就不加后缀
 			trafficVol: node.traffic_limit
 				? `${formatBytesShort(node.traffic_limit)}${num(node.traffic_reset_day ?? 0) > 0 ? "/月" : ""}`
 				: "",
 			trafficType: "",
-			IPv4: "",
-			IPv6: "",
+			IPv4: tags.ipv4 ? "1" : "",
+			IPv6: tags.ipv6 ? "1" : "",
 			networkRoute: "",
-			extra: "",
+			extra: tags.extra,
 		};
 	}
 

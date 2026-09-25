@@ -2,7 +2,7 @@
   "name": "Monitor Nezha",
   "short": "nezha-dash",
   "description": "极简探针（Monitor）的哪吒监控风格前端：服务器卡片 / 紧凑列表双视图、节点详情多标签图表、全球地图、延迟探测与周期流量统计。移植自 hamster1963/nezha-dash-v2。",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "author": "hamster1963（原项目作者）· 移植到 Monitor by akanotanin",
   "url": "https://github.com/akanotanin/monitor-theme-nezha-dash",
   "config": [
@@ -176,6 +176,17 @@
         { "value": "uk", "label": "Українська" }
       ],
       "help": "访客第一次进入时使用的语言；访客自己在页头切换过就以访客为准"
+    },
+    {
+      "type": "title",
+      "label": "卡片底部标签"
+    },
+    {
+      "type": "text",
+      "key": "planTags",
+      "label": "标签规则",
+      "default": "",
+      "help": "每行一条：匹配 = 标签1,标签2。匹配按「分组名」或「节点名」子串，* 兜底，# 开头是注释；标签写 IPv4／IPv6 走紫／粉芯片，第一个其它标签当带宽（蓝），其余是灰标签。例：\n东京 = 2.5Gbps,IPv4,IPv6\n* = 1Gbps,IPv4"
     },
     {
       "type": "text",

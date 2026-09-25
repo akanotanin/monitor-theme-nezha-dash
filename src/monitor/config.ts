@@ -21,6 +21,8 @@ export interface ThemeConfig {
 	customCode: string;
 	/** 站点默认语言，留空表示跟随访客浏览器。 */
 	language: string;
+	/** 卡片底部标签规则（每行「匹配 = 标签,标签」）。 */
+	planTags: string;
 	forceTheme: string;
 	forceSortType: string;
 	forceSortOrder: string;
@@ -44,6 +46,7 @@ export const defaultThemeConfig: ThemeConfig = {
 	customLinks: "",
 	customCode: "",
 	language: "",
+	planTags: "",
 	forceTheme: "",
 	forceSortType: "",
 	forceSortOrder: "",
@@ -76,6 +79,7 @@ function coerce(raw: Record<string, unknown>): ThemeConfig {
 		customLinks: asString(raw.customLinks, d.customLinks),
 		customCode: asString(raw.customCode, d.customCode),
 		language: asString(raw.language, d.language),
+		planTags: asString(raw.planTags, d.planTags),
 		forceTheme: asString(raw.forceTheme, d.forceTheme),
 		forceSortType: asString(raw.forceSortType, d.forceSortType),
 		forceSortOrder: asString(raw.forceSortOrder, d.forceSortOrder),
@@ -110,6 +114,56 @@ export function loadThemeConfig(): Promise<ThemeConfig> {
 			inflight = null;
 		});
 	return inflight;
+}
+
+/**
+ * 解析「卡片底部标签」规则，算出某台机器要显示的标签。
+ *
+ * 探针的公开接口没有带宽、也没有 IPv4／IPv6（只有管理端的 ipv4_pin／ipv6_pin），
+ * 哪吒那边是站长手写进每台服务器的「公开备注」，所以这里退一步：由站长在主题设置里填规则。
+ * 每行一条 `匹配 = 标签1,标签2`；匹配按「分组名」或「节点名」子串（包含即命中），`*` 兜底，
+ * `#` 开头是注释。标签写 IPv4／IPv6（不区分大小写）走紫／粉芯片，第一个其它标签当带宽（蓝），
+ * 其余进灰标签 —— 用的就是上游 PlanInfo 已有的那几种芯片。
+ */
+export function resolvePlanTags(node: { name?: string | null; group?: string | null }): {
+	bandwidth: string;
+	ipv4: boolean;
+	ipv6: boolean;
+	extra: string;
+} {
+	const none = { bandwidth: "", ipv4: false, ipv6: false, extra: "" };
+	const rules = (cache ?? defaultThemeConfig).planTags;
+	if (!rules) return none;
+
+	let fallback: string[] | null = null;
+	for (const line of rules.split("\n")) {
+		const text = line.trim();
+		if (!text || text.startsWith("#")) continue;
+		const eq = text.indexOf("=");
+		if (eq < 0) continue;
+		const matcher = text.slice(0, eq).trim();
+		const labels = text
+			.slice(eq + 1)
+			.split(",")
+			.map((s) => s.trim())
+			.filter(Boolean);
+		if (!matcher || labels.length === 0) continue;
+		if (matcher === "*") {
+			fallback = labels;
+			continue;
+		}
+		if (String(node.name ?? "").includes(matcher) || String(node.group ?? "").includes(matcher)) {
+			return toPlanTags(labels);
+		}
+	}
+	return fallback ? toPlanTags(fallback) : none;
+}
+
+function toPlanTags(labels: string[]) {
+	const ipv4 = labels.some((l) => /^ipv4$/i.test(l));
+	const ipv6 = labels.some((l) => /^ipv6$/i.test(l));
+	const rest = labels.filter((l) => !/^ipv[46]$/i.test(l));
+	return { bandwidth: rest[0] ?? "", ipv4, ipv6, extra: rest.slice(1).join(",") };
 }
 
 /**
