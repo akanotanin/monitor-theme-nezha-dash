@@ -1,7 +1,7 @@
 // 打主题包：theme.json + LICENSE + dist/（+ preview.png，可选）
 // 极简探针的主题包结构：hub 只伺服静态文件，所以 dist/ 就是整站。
 import { execFileSync } from "node:child_process";
-import { cpSync, existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { cpSync, existsSync, mkdirSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from "node:fs";
 
 const meta = JSON.parse(readFileSync("theme.json", "utf8"));
 if (!/^[A-Za-z0-9_-]+$/.test(meta.short || ""))
@@ -9,6 +9,28 @@ if (!/^[A-Za-z0-9_-]+$/.test(meta.short || ""))
 if (!existsSync("dist/index.html"))
   throw new Error("缺少 dist/index.html，先跑 pnpm build");
 if (!existsSync("LICENSE")) throw new Error("缺少 LICENSE");
+
+/**
+ * 别把旧产物打进包里：源码比 dist 新就直接报错。
+ * 早先 `pnpm build | tail` 掩盖了构建失败的退出码，结果装上去的是上一次的 dist。
+ */
+function newestMtime(dir) {
+  let newest = 0;
+  for (const entry of readdirSync(dir, { withFileTypes: true })) {
+    const path = `${dir}/${entry.name}`;
+    if (entry.isDirectory()) newest = Math.max(newest, newestMtime(path));
+    else newest = Math.max(newest, statSync(path).mtimeMs);
+  }
+  return newest;
+}
+const distMtime = statSync("dist/index.html").mtimeMs;
+const srcMtime = Math.max(newestMtime("src"), statSync("index.html").mtimeMs, statSync("theme.json").mtimeMs);
+if (srcMtime > distMtime) {
+  throw new Error(
+    "dist/ 比源码旧（构建产物过期），先跑 pnpm build 再打包；" +
+      `源码 ${new Date(srcMtime).toLocaleString()} > 产物 ${new Date(distMtime).toLocaleString()}`,
+  );
+}
 
 rmSync("release", { recursive: true, force: true });
 const staging = "release/staging";

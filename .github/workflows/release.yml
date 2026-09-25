@@ -38,6 +38,7 @@ jobs:
             }
           '
       - run: pnpm install --frozen-lockfile
+      - run: pnpm build
       - run: pnpm package
       - name: Publish GitHub Release
         env:

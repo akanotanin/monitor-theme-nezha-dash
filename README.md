@@ -90,6 +90,10 @@
 
 **上游的站点级开关怎么落地的**：上游靠哪吒的服务端模板往页面注入 `window.ForceShowMap`、`window.CustomLogo` 之类的全局变量。探针的主题包是纯静态文件，没有模板可注入，于是这些值改由主题设置下发：启动时先取配置，`applyWindowGlobals()` 写回 `window`，组件因此一行都不用改。
 
+### 页脚
+
+只保留命令面板的快捷键提示（`⌘K` / `Ctrl K`）：去掉了上游的「©2020-… Nezha ⟨版本⟩」与「Theme by nezha-dash-v2 (hash) · 移植到 极简探针 Monitor by akanotanin」两行。原作者署名仍在 `LICENSE`、`theme.json` 的 `author` 与仓库 README 里。
+
 ## 开发
 
 ```bash
@@ -108,6 +112,11 @@ pnpm package  # 出 release/theme.tar.gz 与带版本号的副本 + sha256
 
 1. **本机 Node 26 下整套跑不起来**：vitest 的 jsdom 环境拿不到 `localStorage`（Node 26 的实验性 localStorage 会抢占），`src/test/setup.ts` 的 `localStorage.clear()` 在 afterEach 抛错，148 个用例全失败。该现象在**未改动的上游代码**上同样复现（已实测），与移植无关；用上游 CI 使用的 Node 22 可正常运行。
 2. **测试的 mock 打的是哪吒的 `/api/v1/*`**，而这套移植已把接口换成极简探针的 `/api/nodes`、`/api/ws`、`/api/nodes/{id}/metrics`、`/api/me`、`/api/themes/<short>/config`；另外被移除的区块（GPU / 进程数 / TCP-UDP / 交换历史）相关断言也随代码失效。已同步删掉 `server-detail-chart.test.tsx` 里那几个失效断言（GPU、进程、TCP/UDP，以及历史指标列表里的 gpu/swap/process_count/tcp_conn/udp_conn），其余文件的 mock 未做对齐——要一套全绿的测试需要单独一轮，把 mock 换成探针的接口。
+
+## 版本记录
+
+- **1.0.1** — 页脚去掉「©2020-… Nezha」与「Theme by nezha-dash-v2 (hash) · 移植到 极简探针 Monitor by akanotanin」两行，只留 `⌘K`/`Ctrl K` 提示。
+- **1.0.0** — 首发：哪吒前端（nezha-dash-v2 v2.4.3）移植到极简探针。
 
 ## 许可
 

@@ -2,7 +2,7 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { MemoryRouter, useLocation } from "react-router-dom";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import Footer from "@/components/Footer";
 import GroupSwitch from "@/components/GroupSwitch";
 import {
@@ -24,32 +24,15 @@ function LocationProbe() {
 }
 
 describe("Footer", () => {
-	beforeEach(() => {
-		apiMocks.fetchSetting.mockResolvedValue({
-			success: true,
-			data: {
-				config: {
-					debug: false,
-					language: "en-US",
-					site_name: "Nezha",
-					user_template: "",
-					admin_template: "",
-					custom_code: "",
-				},
-				version: "9.9.9",
-			},
-		});
-	});
-
-	it("renders setting version and project attribution", async () => {
+	it("只渲染命令面板的快捷键提示（移植已去掉上游两行署名）", () => {
 		renderWithProviders(<Footer />);
 
-		expect(screen.getByText("footer.themeBy")).toBeInTheDocument();
-		expect(screen.getByText("nezha-dash")).toHaveAttribute(
-			"href",
-			"https://github.com/hamster1963/nezha-dash",
-		);
-		expect(await screen.findByText("9.9.9")).toBeInTheDocument();
+		// 上游的「©2020-… Nezha <版本>」与「Theme by nezha-dash-v2 (hash)」已按移植要求删除
+		expect(screen.queryByText("footer.themeBy")).not.toBeInTheDocument();
+		expect(screen.queryByText("Nezha")).not.toBeInTheDocument();
+		expect(screen.queryByText("9.9.9")).not.toBeInTheDocument();
+		// 快捷键提示保留
+		expect(document.querySelector("kbd")).not.toBeNull();
 	});
 });
 
