@@ -92,7 +92,6 @@ function ServerCardInline({
 						{parsedData?.billingDataMod && (
 							<BillingInfo parsedData={parsedData} />
 						)}
-						{parsedData?.planDataMod && <PlanInfo parsedData={parsedData} align="start" />}
 					</div>
 				</section>
 				<Separator orientation="vertical" className="h-8 mx-0 ml-2" />
@@ -195,6 +194,8 @@ function ServerCardInline({
 							</div>
 						</div>
 					</section>
+					{/* 与源站一致：标签行在右侧指标网格之后、靠左（上游原本就在这里，只是对齐由父级决定） */}
+					{parsedData?.planDataMod && <PlanInfo parsedData={parsedData} align="start" />}
 				</div>
 			</Card>
 		</section>
@@ -233,10 +234,10 @@ function ServerCardInline({
 					{parsedData?.billingDataMod && (
 						<BillingInfo parsedData={parsedData} />
 					)}
-					{parsedData?.planDataMod && <PlanInfo parsedData={parsedData} align="start" />}
 				</div>
 			</section>
 			<Separator orientation="vertical" className="h-8 ml-3 lg:ml-1 mr-3" />
+			{parsedData?.planDataMod && <PlanInfo parsedData={parsedData} align="start" />}
 		</Card>
 	);
 }
