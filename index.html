@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <script>
+      ;(() => {
+        const storageKey = "vite-ui-theme"
+        const root = document.documentElement
+        const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)")
+
+        const resolveTheme = (theme) =>
+          theme === "system" ? (mediaQuery.matches ? "dark" : "light") : theme
+
+        function updateThemeColor(nextTheme) {
+          const themeColor = nextTheme === "dark" ? "hsl(30 15% 8%)" : "hsl(0 0% 98%)"
+          let meta = document.querySelector('meta[name="theme-color"]')
+
+          if (!meta) {
+            meta = document.createElement("meta")
+            meta.setAttribute("name", "theme-color")
+            document.head.appendChild(meta)
+          }
+
+          meta.setAttribute("content", themeColor)
+        }
+
+        function applyResolvedTheme(resolvedTheme) {
+          root.classList.remove("light", "dark")
+          root.classList.add(resolvedTheme)
+          root.style.colorScheme = resolvedTheme
+          root.style.backgroundColor =
+            resolvedTheme === "dark" ? "hsl(30 15% 8%)" : "hsl(0 0% 98%)"
+          updateThemeColor(resolvedTheme)
+        }
+
+        let theme = "system"
+
+        try {
+          const storedTheme = localStorage.getItem(storageKey)
+          if (storedTheme === "light" || storedTheme === "dark" || storedTheme === "system") {
+            theme = storedTheme
+          }
+        } catch (_e) {
+          theme = "system"
+        }
+
+        applyResolvedTheme(resolveTheme(theme))
+
+        // Add loaded class after React has mounted
+        window.addEventListener("load", () => {
+          const root = document.getElementById("root")
+          if (root) {
+            // 使用 RAF 确保在下一帧渲染
+            requestAnimationFrame(() => {
+              requestAnimationFrame(() => {
+                root.classList.add("loaded")
+              })
+            })
+          }
+        })
+      })()
+    </script>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Monitor Nezha</title>
+
+    <!-- PWA -->
+    <link rel="manifest" href="/manifest.json" />
+    <meta name="theme-color" content="hsl(0 0% 98%)" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="Monitor Nezha" />
+    <link rel="apple-touch-icon" href="/android-chrome-192x192.png" />
+
+    <link rel="stylesheet" href="/vendor/flag-icons.min.css" />
+    <link rel="stylesheet" href="/vendor/font-logos.css" />
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
