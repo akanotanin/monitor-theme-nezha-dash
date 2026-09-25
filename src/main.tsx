@@ -11,7 +11,9 @@ import { SortProvider } from "./context/sort-provider";
 import { StatusProvider } from "./context/status-provider";
 import { TooltipProvider } from "./context/tooltip-provider";
 import { WebSocketProvider } from "./context/websocket-provider";
-import "./i18n";
+// i18n.js 是上游保留的 JS 文件（没有类型声明）
+// @ts-expect-error 上游 i18n.js 无 d.ts
+import i18n from "./i18n";
 import "./index.css";
 import { applyWindowGlobals, loadThemeConfig } from "./monitor/config";
 import { endpoints, fetchMe } from "./monitor/endpoints";
@@ -45,6 +47,12 @@ async function boot() {
 	}
 	const config = await loadThemeConfig();
 	applyWindowGlobals(config, me.site_name);
+
+	// 上游是 App.tsx 从哪吒后端设置里取 language 再 changeLanguage；探针没有这份站点设置，
+	// 改从主题设置取。访客在页头自己切过语言（localStorage 里有值）就以访客为准 —— 同上游判断。
+	if (config.language && !localStorage.getItem("language")) {
+		await i18n.changeLanguage(config.language);
+	}
 
 	ReactDOM.createRoot(rootElement as HTMLElement).render(
 		<ThemeProvider storageKey="vite-ui-theme">

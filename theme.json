@@ -2,7 +2,7 @@
   "name": "Monitor Nezha",
   "short": "nezha-dash",
   "description": "极简探针（Monitor）的哪吒监控风格前端：服务器卡片 / 紧凑列表双视图、节点详情多标签图表、全球地图、延迟探测与周期流量统计。移植自 hamster1963/nezha-dash-v2。",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "author": "hamster1963（原项目作者）· 移植到 Monitor by akanotanin",
   "url": "https://github.com/akanotanin/monitor-theme-nezha-dash",
   "config": [
@@ -92,9 +92,9 @@
     {
       "type": "boolean",
       "key": "showNetTransfer",
-      "label": "显示周期流量",
+      "label": "卡片显示周期流量",
       "default": false,
-      "help": "在卡片／列表上显示本计费周期的上下行流量"
+      "help": "在服务器卡片上显示本计费周期的上传／下载累计流量（探针的月流量统计）"
     },
     {
       "type": "boolean",
@@ -106,9 +106,9 @@
     {
       "type": "boolean",
       "key": "fixedTopServerName",
-      "label": "紧凑列表固定表头",
+      "label": "卡片：服务器名置顶",
       "default": false,
-      "help": "滚动时服务器名固定在上方"
+      "help": "服务器卡片改成「名称／国旗居中在上、指标排在下」的竖版布局（关掉则名称在左、指标在右）"
     },
     {
       "type": "boolean",
@@ -175,7 +175,7 @@
         { "value": "ta-IN", "label": "தமிழ்" },
         { "value": "uk", "label": "Українська" }
       ],
-      "help": "访客没有自己的偏好时使用的语言"
+      "help": "访客第一次进入时使用的语言；访客自己在页头切换过就以访客为准"
     },
     {
       "type": "text",

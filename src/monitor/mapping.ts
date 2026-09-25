@@ -135,7 +135,10 @@ export function platformFromOs(os?: string | null): { platform: string; version:
  */
 export function buildPublicNote(node: MonitorNode): string {
 	const cycle = cycleLabel(node.billing_cycle);
-	const hasBilling = Boolean(node.expires_at) || num(node.price ?? 0) > 0 || Boolean(cycle);
+	// 探针把「价格」存成节点字段（0 = 明确免费，null = 没填），哪吒那边是站长在公开备注里手写：
+	// amount="0" 上游渲染成绿色「免费」，endDate 以 0000-00-00 开头渲染成「永久」（见上游 billingInfo.tsx）
+	const hasPrice = node.price !== null && node.price !== undefined;
+	const hasBilling = Boolean(node.expires_at) || hasPrice || Boolean(cycle);
 	const hasPlan = Boolean(node.traffic_limit) || Boolean(node.traffic_mode);
 
 	if (!hasBilling && !hasPlan) return "";
@@ -154,14 +157,18 @@ export function buildPublicNote(node: MonitorNode): string {
 			endDate,
 			autoRenewal: "",
 			cycle,
-			amount: price === null || price === undefined ? "" : `${symbol}${price}`,
+			amount: !hasPrice ? "" : price === 0 ? "0" : `${symbol}${price}`,
 		};
 	}
 
 	if (hasPlan) {
 		note.planDataMod = {
 			bandwidth: "",
-			trafficVol: node.traffic_limit ? formatBytesShort(node.traffic_limit) : "",
+			// 探针的流量按月重置（traffic_reset_day = 每月几号），所以带上「/月」；
+			// 没有重置日的节点不是月度配额，就不加后缀
+			trafficVol: node.traffic_limit
+				? `${formatBytesShort(node.traffic_limit)}${num(node.traffic_reset_day ?? 0) > 0 ? "/月" : ""}`
+				: "",
 			trafficType: "",
 			IPv4: "",
 			IPv6: "",
