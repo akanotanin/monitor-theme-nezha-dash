@@ -53,11 +53,11 @@ export const defaultThemeConfig: ThemeConfig = {
 	forceShowMap: false,
 	forceShowServices: false,
 	forceCardInline: false,
-	showNetTransfer: false,
+	showNetTransfer: true,
 	forceUseSvgFlag: false,
-	fixedTopServerName: false,
+	fixedTopServerName: true,
 	disableAnimatedMan: false,
-	forcePeakCutEnabled: false,
+	forcePeakCutEnabled: true,
 };
 
 const asString = (value: unknown, fallback: string) =>

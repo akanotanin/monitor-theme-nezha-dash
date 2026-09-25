@@ -3,6 +3,9 @@
 import { execFileSync } from "node:child_process";
 import { cpSync, existsSync, mkdirSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from "node:fs";
 
+// 默认值必须与 config.ts 同步，否则「面板显示已开启、页面还是旧形态」
+execFileSync(process.execPath, ["scripts/check-defaults.mjs"], { stdio: "inherit" });
+
 const meta = JSON.parse(readFileSync("theme.json", "utf8"));
 if (!/^[A-Za-z0-9_-]+$/.test(meta.short || ""))
   throw new Error(`theme.json 的 short 不合法: ${meta.short}`);

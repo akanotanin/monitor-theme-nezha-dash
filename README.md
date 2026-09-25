@@ -25,6 +25,7 @@
 | --- | --- | --- |
 | 站点外观 | 站点 Logo | 左上角 Logo 图片地址，默认探针自带的图标 |
 | | 站点副标题 | Logo 右侧文字，留空显示探针后台的站点名 |
+| | 自定义导航链接 | JSON 数组，显示在页头右上角，例 `[{"name":"Blog","link":"https://example.com"}]` |
 | | 强制主题 | 跟随访客 / 浅色 / 深色 |
 | | 桌面端背景图、移动端背景图 | 图片地址，留空无背景 |
 | | 首页插画 | 总览卡片旁的插画地址，可换可隐藏 |
@@ -123,6 +124,8 @@ pnpm package  # 出 release/theme.tar.gz 与带版本号的副本 + sha256
 ```
 
 打 tag（形如 `1.0.0`，须与 `theme.json` / `package.json` 的 version 一致）会触发 GitHub Actions 自动构建并发布 Release。
+
+`scripts/check-defaults.mjs` 会在打包前校验 **`theme.json` 的 `default` 与 `src/monitor/config.ts` 的 `defaultThemeConfig` 是否一致**，不一致直接报错。两处必须同步：后台面板显示 theme.json 的默认值，而配置为空（新装、或保存失败）时页面实际用的是 config.ts —— 两边不同步就会出现「面板显示已开启、页面还是旧形态」这种极难排查的现象。
 
 主题包结构：`theme.json` + `LICENSE` + `dist/`（+ 可选 `preview.png`）。探针 hub 只伺服静态文件，`dist/` 就是整站，前端路由靠 hub 的 SPA 兜底。
 
