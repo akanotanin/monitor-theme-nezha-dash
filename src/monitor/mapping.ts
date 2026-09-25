@@ -32,6 +32,16 @@ import type {
 const num = (value: unknown, fallback = 0): number =>
 	typeof value === "number" && Number.isFinite(value) ? value : fallback;
 
+/**
+ * ping 行的延迟：hub 对「丢包」那一格可能给 null、甚至整字段缺失，
+ * 直接参与算术/交给上游组件会炸（上游 NetworkChart 会 null.toFixed）。
+ * 所以统一收敛成数字：>=0 视为延迟，其它（null/负数/非数）视为丢包。
+ */
+const pingLatency = (row: { latency?: unknown }): { delay: number; lost: boolean } => {
+	const raw = Number(row?.latency);
+	return Number.isFinite(raw) && raw >= 0 ? { delay: raw, lost: false } : { delay: 0, lost: true };
+};
+
 /** 探针的 last_seen 是秒，哪吒的 last_active 是 ISO 字符串。 */
 const isoFromSeconds = (seconds?: number): string =>
 	typeof seconds === "number" && seconds > 0
@@ -374,8 +384,8 @@ export function historyToMonitor(node: MonitorNode, history: MonitorHistory): Mo
 			server_id: node.id,
 			server_name: node.name,
 			created_at: rows.map((row) => row.ts * 1000),
-			avg_delay: rows.map((row) => (row.latency < 0 ? 0 : row.latency)),
-			packet_loss: rows.map((row) => (row.latency < 0 ? 100 : 0)),
+			avg_delay: rows.map((row) => pingLatency(row).delay),
+			packet_loss: rows.map((row) => (pingLatency(row).lost ? 100 : 0)),
 		};
 	});
 
@@ -420,11 +430,12 @@ export function buildServiceResponse(
 			}
 			entry.serverNames.add(node.name);
 			const bucket = entry.days[index];
-			if (row.latency < 0) {
+			const { delay, lost } = pingLatency(row);
+			if (lost) {
 				bucket.down += 1;
 			} else {
 				bucket.up += 1;
-				bucket.delaySum += row.latency;
+				bucket.delaySum += delay;
 			}
 		}
 	}

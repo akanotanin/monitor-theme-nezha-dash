@@ -36,7 +36,8 @@ export const CycleTransferStatsClient: React.FC<
 			)}
 		>
 			{serverStats.map(({ serverId, serverName, transfer, nextUpdate }) => {
-				const progress = (transfer / max) * 100;
+				const rawProgress = (transfer / max) * 100;
+				const progress = Number.isFinite(rawProgress) ? rawProgress : 0;
 
 				return (
 					<div key={serverId} className="space-y-3">

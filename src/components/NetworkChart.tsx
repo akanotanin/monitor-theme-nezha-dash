@@ -336,8 +336,9 @@ export const NetworkChartClient = React.memo(function NetworkChart({
 
 		for (const key of chartDataKey) {
 			const data = chartData[key] || [];
-			if (data.length > 0) {
-				const delays = data.map((item) => item.avg_delay);
+			// 只看有限值：延迟可能缺失（丢包样本），Math.min/max 会把 null 当 0 用
+			const delays = data.map((item) => item.avg_delay).filter((value) => Number.isFinite(value));
+			if (delays.length > 0) {
 				const minDelay = Math.min(...delays);
 				const maxDelay = Math.max(...delays);
 				stats[key] = { minDelay, maxDelay };
@@ -352,9 +353,11 @@ export const NetworkChartClient = React.memo(function NetworkChart({
 	const chartButtons = useMemo(
 		() =>
 			chartDataKey.map((key) => {
-				const monitorData = chartData[key];
-				const lastDelay = monitorData[monitorData.length - 1].avg_delay;
-				const stats = chartStats[key];
+				const monitorData = chartData[key] ?? [];
+				// 最后一格可能是丢包（没有延迟），此时显示「—」而不是 null.toFixed 崩掉
+				const lastRaw = monitorData[monitorData.length - 1]?.avg_delay;
+				const lastDelay = Number.isFinite(lastRaw) ? lastRaw : null;
+				const stats = chartStats[key] ?? { minDelay: 0, maxDelay: 0 };
 
 				// Calculate average packet loss if available
 				const packetLossData = monitorData.reduce<number[]>((acc, item) => {
@@ -381,7 +384,7 @@ export const NetworkChartClient = React.memo(function NetworkChart({
 						</span>
 						<div className="flex flex-col gap-0.5">
 							<span className="text-md font-semibold leading-none sm:text-xl">
-								{lastDelay.toFixed(2)}ms
+								{lastDelay === null ? "—" : `${lastDelay.toFixed(2)}ms`}
 							</span>
 							<div className="flex items-center gap-2 text-[12px]">
 								<span className="text-green-600 dark:text-green-400">
