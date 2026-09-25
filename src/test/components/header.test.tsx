@@ -108,7 +108,6 @@ describe("Header", () => {
 		headerMocks.updateBackground.mockReset();
 		Object.assign(window, {
 			CustomBackgroundImage: "",
-			CustomDesc: "",
 			CustomLinks: "",
 			CustomLogo: "",
 			CustomMobileBackgroundImage: "",
@@ -120,7 +119,6 @@ describe("Header", () => {
 	it("renders configured site identity, custom links, online count, and dashboard state", async () => {
 		const user = userEvent.setup();
 		Object.assign(window, {
-			CustomDesc: "edge status",
 			CustomLinks: JSON.stringify([
 				{ link: "https://example.test", name: "Docs" },
 			]),
@@ -137,7 +135,6 @@ describe("Header", () => {
 		renderHeader();
 
 		const siteName = await screen.findByText("Status Hub");
-		expect(screen.getByText("edge status")).toBeInTheDocument();
 		expect(screen.getByAltText("apple-touch-icon")).toHaveAttribute(
 			"src",
 			"/logo.png",

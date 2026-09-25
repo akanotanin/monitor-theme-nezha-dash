@@ -10,8 +10,6 @@ import { fetchThemeConfig } from "./endpoints";
 export interface ThemeConfig {
 	/** 站标（图片地址）。 */
 	customLogo: string;
-	/** 站标右侧的说明文字；留空时用探针站点名。 */
-	customDesc: string;
 	customBackgroundImage: string;
 	customMobileBackgroundImage: string;
 	customIllustration: string;
@@ -29,9 +27,7 @@ export interface ThemeConfig {
 	forceShowMap: boolean;
 	forceShowServices: boolean;
 	forceCardInline: boolean;
-	showNetTransfer: boolean;
 	forceUseSvgFlag: boolean;
-	fixedTopServerName: boolean;
 	disableAnimatedMan: boolean;
 	forcePeakCutEnabled: boolean;
 }
@@ -39,7 +35,6 @@ export interface ThemeConfig {
 /** 默认值：站标用极简探针自己的默认图标，不沿用原项目图标。 */
 export const defaultThemeConfig: ThemeConfig = {
 	customLogo: "/favicon.svg",
-	customDesc: "",
 	customBackgroundImage: "",
 	customMobileBackgroundImage: "",
 	customIllustration: "/character.webp",
@@ -53,9 +48,7 @@ export const defaultThemeConfig: ThemeConfig = {
 	forceShowMap: false,
 	forceShowServices: false,
 	forceCardInline: false,
-	showNetTransfer: true,
 	forceUseSvgFlag: false,
-	fixedTopServerName: true,
 	disableAnimatedMan: false,
 	forcePeakCutEnabled: true,
 };
@@ -69,7 +62,6 @@ function coerce(raw: Record<string, unknown>): ThemeConfig {
 	const d = defaultThemeConfig;
 	return {
 		customLogo: asString(raw.customLogo, d.customLogo),
-		customDesc: asString(raw.customDesc, d.customDesc),
 		customBackgroundImage: asString(raw.customBackgroundImage, d.customBackgroundImage),
 		customMobileBackgroundImage: asString(
 			raw.customMobileBackgroundImage,
@@ -86,9 +78,7 @@ function coerce(raw: Record<string, unknown>): ThemeConfig {
 		forceShowMap: asBoolean(raw.forceShowMap, d.forceShowMap),
 		forceShowServices: asBoolean(raw.forceShowServices, d.forceShowServices),
 		forceCardInline: asBoolean(raw.forceCardInline, d.forceCardInline),
-		showNetTransfer: asBoolean(raw.showNetTransfer, d.showNetTransfer),
 		forceUseSvgFlag: asBoolean(raw.forceUseSvgFlag, d.forceUseSvgFlag),
-		fixedTopServerName: asBoolean(raw.fixedTopServerName, d.fixedTopServerName),
 		disableAnimatedMan: asBoolean(raw.disableAnimatedMan, d.disableAnimatedMan),
 		forcePeakCutEnabled: asBoolean(raw.forcePeakCutEnabled, d.forcePeakCutEnabled),
 	};
@@ -173,10 +163,9 @@ function toPlanTags(labels: string[]) {
  * `@ts-expect-error 全局变量`，一旦真的声明了属性，那些注释会变成
  * TS2578「未使用的 @ts-expect-error」而编译失败。
  */
-export function applyWindowGlobals(cfg: ThemeConfig, siteName?: string): void {
+export function applyWindowGlobals(cfg: ThemeConfig): void {
 	const w = window as unknown as Record<string, unknown>;
 	w.CustomLogo = cfg.customLogo || defaultThemeConfig.customLogo;
-	w.CustomDesc = cfg.customDesc || siteName || "Monitor";
 	w.CustomBackgroundImage = cfg.customBackgroundImage;
 	w.CustomMobileBackgroundImage = cfg.customMobileBackgroundImage;
 	w.CustomIllustration = cfg.customIllustration;
@@ -185,9 +174,10 @@ export function applyWindowGlobals(cfg: ThemeConfig, siteName?: string): void {
 	w.ForceShowMap = cfg.forceShowMap;
 	w.ForceShowServices = cfg.forceShowServices;
 	w.ForceCardInline = cfg.forceCardInline;
-	w.ShowNetTransfer = cfg.showNetTransfer;
+	// 卡片形态固定为「名称置顶 + 显示周期流量」，不再提供开关
+	w.ShowNetTransfer = true;
 	w.ForceUseSvgFlag = cfg.forceUseSvgFlag;
-	w.FixedTopServerName = cfg.fixedTopServerName;
+	w.FixedTopServerName = true;
 	w.DisableAnimatedMan = cfg.disableAnimatedMan;
 	w.ForcePeakCutEnabled = cfg.forcePeakCutEnabled;
 	// 排序项未设置时保持 undefined：sort-provider 就是按「有值才强制」来判断的

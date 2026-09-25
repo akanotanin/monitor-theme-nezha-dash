@@ -16,8 +16,7 @@ import { WebSocketProvider } from "./context/websocket-provider";
 import i18n from "./i18n";
 import "./index.css";
 import { applyWindowGlobals, loadThemeConfig } from "./monitor/config";
-import { endpoints, fetchMe } from "./monitor/endpoints";
-import type { MonitorMe } from "./monitor/types";
+import { endpoints } from "./monitor/endpoints";
 
 const queryClient = new QueryClient();
 const ReactQueryDevtools = import.meta.env.DEV
@@ -36,17 +35,11 @@ if (!rootElement) {
 /**
  * 上游那些站点级开关（`window.ForceShowMap` 之类）原本由哪吒的服务端模板注入，
  * 极简探针的主题包是纯静态文件、没有模板可注入，于是改由主题设置下发：这里先取
- * 主题配置和站点信息、写回 window，再挂载 React —— 先把值放好，首屏就不会读到空。
+ * 主题配置写回 window，再挂载 React —— 先把值放好，首屏就不会读到空。
  */
 async function boot() {
-	let me: MonitorMe = {};
-	try {
-		me = await fetchMe();
-	} catch {
-		me = {};
-	}
 	const config = await loadThemeConfig();
-	applyWindowGlobals(config, me.site_name);
+	applyWindowGlobals(config);
 
 	// 上游是 App.tsx 从哪吒后端设置里取 language 再 changeLanguage；探针没有这份站点设置，
 	// 改从主题设置取。访客在页头自己切过语言（localStorage 里有值）就以访客为准 —— 同上游判断。
