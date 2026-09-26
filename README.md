@@ -34,4 +34,4 @@
 
 ## 许可
 
-Apache-2.0，继承自[上游仓库](https://github.com/hamster1963/nezha-dash-v2)。原作者 hamster1963 的署名保留在 LICENSE、页脚与主题元信息中。
+Apache-2.0，继承自[上游仓库](https://github.com/hamster1963/nezha-dash-v2)；本项目为其移植版本，原项目版权归原作者 hamster1963 所有。
