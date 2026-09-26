@@ -18,6 +18,10 @@ import NumericText from "./NumericText";
 import { SearchButton } from "./SearchButton";
 import { Button } from "./ui/button";
 
+// 标签页标题的缓存键，与 public/nezha-title-probe.js 里那个 KEY 必须一致（那个脚本在入口包
+// 执行前就把站名贴上，靠的就是这个键）。用主题自己的键，避免同源上两个主题互相覆盖。
+const TITLE_CACHE_KEY = "nezha-dash:site_name";
+
 interface TimeState {
 	hh: number;
 	mm: number;
@@ -88,9 +92,22 @@ function Header() {
 		document.getElementsByTagName("head")[0].appendChild(link);
 	}, [customLogo]);
 
+	// 站名由站长在后台改，而 /api/me（桥接到哪吒的 setting）没回来时手上只有兜底值——
+	// 所以数据没到就不写标题：写一次就只能写对一次，否则访客会看到「主题名 → 兜底名 → 站名」三跳。
 	useEffect(() => {
-		document.title = siteName || "哪吒监控 Nezha Monitoring";
-	}, [siteName]);
+		if (!settingData) return;
+		const title = siteName || "哪吒监控 Nezha Monitoring";
+		// 宣告标题归 React 管：index.html 里的 nezha-title-probe.js 冷启动时会自己去问一次 /api/me，
+		// 那条迟到的响应不许把这里写好的标题改回去。
+		(window as unknown as { __titleOwned?: boolean }).__titleOwned = true;
+		document.title = title;
+		try {
+			// 记给下一次刷新用（nezha-title-probe.js 贴的就是它）。
+			localStorage.setItem(TITLE_CACHE_KEY, title);
+		} catch {
+			// 隐私模式 / 存储被禁用：标题照写，只是下次刷新会先回到占位值。
+		}
+	}, [settingData, siteName]);
 
 	const handleBackgroundToggle = () => {
 		if (window.CustomBackgroundImage) {

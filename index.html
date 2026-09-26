@@ -62,7 +62,14 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Monitor Nezha</title>
+    <!-- 标签页标题的占位值：静态 HTML 不可能知道站长把站名改成了什么，
+         真站名要到 JS 里才有。这里沿用上游那句（与 Header.tsx 里那句兜底值同值），
+         换成主题名（Monitor Nezha）只会让每次加载凭空多一跳。 -->
+    <title>哪吒监控 Nezha Monitoring</title>
+    <!-- 标题的头一步（贴缓存里的站名 / 冷启动时早问一次 /api/me）：public/nezha-title-probe.js，
+         与 src/components/Header.tsx 里的 TITLE_CACHE_KEY 共用一个键。独立文件而不是内联脚本——
+         站点前面若有 CSP，内联脚本会被挡掉。 -->
+    <script src="/nezha-title-probe.js"></script>
 
     <!-- PWA -->
     <link rel="manifest" href="/manifest.json" />

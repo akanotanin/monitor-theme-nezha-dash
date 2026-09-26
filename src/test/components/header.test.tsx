@@ -158,6 +158,37 @@ describe("Header", () => {
 		expect(screen.getByText("/")).toBeInTheDocument();
 	});
 
+	it("数据没到之前不碰标题，到了才写一次并把站名记给刷新用", async () => {
+		let resolveSetting: ((value: unknown) => void) | undefined;
+		headerMocks.fetchSetting.mockReturnValue(
+			new Promise((resolve) => {
+				resolveSetting = resolve;
+			}),
+		);
+		// 静态 HTML 留下的占位值（index.html 里那句）：数据没到时谁都不许改写它。
+		document.title = "哪吒监控 Nezha Monitoring";
+		localStorage.removeItem("nezha-dash:site_name");
+		// 上一个用例已经置过这个标志（同一个 jsdom window），先摘掉再验。
+		delete (window as unknown as { __titleOwned?: boolean }).__titleOwned;
+
+		renderHeader();
+
+		await waitFor(() => expect(headerMocks.fetchSetting).toHaveBeenCalled());
+		expect(document.title).toBe("哪吒监控 Nezha Monitoring");
+		expect(
+			(window as unknown as { __titleOwned?: boolean }).__titleOwned,
+		).toBeUndefined();
+
+		resolveSetting?.(settingResponse("Status Hub"));
+
+		await waitFor(() => expect(document.title).toBe("Status Hub"));
+		// 置了「标题归 React 管」的标志（那条早问的迟到响应据此退让），并把站名记下来供刷新用。
+		expect(
+			(window as unknown as { __titleOwned?: boolean }).__titleOwned,
+		).toBe(true);
+		expect(localStorage.getItem("nezha-dash:site_name")).toBe("Status Hub");
+	});
+
 	it("uses the offline display and login links when websocket and auth are unavailable", async () => {
 		headerMocks.connected = false;
 
