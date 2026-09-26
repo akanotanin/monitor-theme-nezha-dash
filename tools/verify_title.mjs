@@ -150,10 +150,11 @@ lines = await log()
 owned = await ownedAt()
 console.log(`\n刷新（有缓存）:\n${show(lines)}` + `\n    React 接手=${owned || '—'}ms`)
 check('刷新后末值 = 站名', lines.at(-1)?.[1] === SITE, `末值=${lines.at(-1)?.[1]}`)
-// 静态 HTML 只能先给占位值，所以「零条记录」是做不到的（浏览器在解析 <head> 时就已经显示了它）。
-// 能保证的是：这一跳发生在那个 1KB 文件跑起来的瞬间，而不是等入口包执行完。
-check('刷新时首帧仍是占位值（静态 HTML 的硬限制，如实记下来）', lines[0]?.[1] === FALLBACK, `首帧=${lines[0]?.[1]}`)
-check('刷新时占位值只活到那个早跑脚本执行（没在等入口包）', lines.length <= 2, `${lines.length} 条记录：${lines.map(([, t]) => t).join(' → ')}`)
+// 刷新时那条占位值还在不在，取决于 5ms 采样有没有撞上「静态 <title> 已解析、那个 1KB 文件还没跑完」
+// 那一瞬——本机常能看到，经 CF 的慢链路上通常连一次都采不到（首帧就已经是站名）。这是采样时机问题，
+// 不是行为差异，所以只打印出来看看，不做断言；断言落在「记录条数」与「走的是哪条路」上。
+console.log(`    刷新首帧观测到：${lines[0]?.[1] ?? '—'}（占位值=${lines[0]?.[1] === FALLBACK ? '是' : '没采到'}）`)
+check('刷新时最多两条记录（占位值活不过那个早跑脚本，没在等入口包）', lines.length <= 2, `${lines.length} 条记录：${lines.map(([, t]) => t).join(' → ')}`)
 if (!REAL_HUB) check('刷新走的是「贴缓存」那条路（缓存真的被用上了）', await probeSource() === 'cache', `来源=${await probeSource() || '—'}`)
 if (!REAL_HUB) check('刷新的站名落定在 React 接手之前', owned > 0 && (lines.at(-1)?.[0] ?? 0) <= owned, `落定 ${lines.at(-1)?.[0]}ms vs React 接手 ${owned}ms`)
 if (!REAL_HUB) check('刷新时没有再问一次（缓存命中就不发那条请求了）', titleProbeHits === probesAfterFirstVisit, `首次访问后 ${probesAfterFirstVisit} 次 → 现在 ${titleProbeHits} 次`)
